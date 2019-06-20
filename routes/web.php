@@ -15,12 +15,16 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::group(['prefix' => 'admin'], function() {
-    Route::get('news/create', 'Admin\NewsController@add')->middleware('auth');
-    //課題10-4
-    Route::get('profile/create', 'Admin\ProfileController@add')->middleware('auth');
-    Route::get('profile/edit', 'Admin\ProfileController@edit')->middleware('auth');
+Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function() {
+    Route::get('news/create', 'Admin\NewsController@add');
+    Route::post('news/create', 'Admin\NewsController@create');   //追記14
+    Route::get('profile/create', 'Admin\ProfileController@add'); //課題10-4
+    Route::post('profile/create', 'Admin\ProfileController@create'); //課題14-3
+    Route::get('profile/edit', 'Admin\ProfileController@edit');  //課題10-4
+    Route::post('profile/edit', 'Admin\ProfileController@update'); //課題14-6
 });
+/* group化せずに、19〜24行目の「;」の前に「->middleware('auth')」と記述し、
+   リダイレクト先を個別に指定してもok */
 
 Auth::routes();
 

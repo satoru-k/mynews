@@ -9,18 +9,19 @@ use App\Profile; //課題15-5
 
 class ProfileController extends Controller
 {
+  //addアクション
   public function add()
   {
       return view('admin.profile.create');
   }
 
-  //以下、課題15-5
+  //createアクション 以下、課題15-5
   public function create(Request $request)
   {
+
       //バリデーションを行う
       $this->validate($request, Profile::$rules);
-
-      $profiles = new Profile;
+      $profiles = new Profile; //newメソッドにより、モデルから空のインスタンスを生成
       $form = $request->all();
 
       //フォームから画像が送信されてきたら、保存してprofiles->image_pathに画像のパスを保存
@@ -38,17 +39,76 @@ class ProfileController extends Controller
       $profiles->fill($form);
       $profiles->save();
 
+      //admin/profile/createにリダイレクトする
       return redirect('admin/profile/create');
   }
 
-  public function edit()
+  //indexアクション 以下、課題17
+  public function index(Request $request)
   {
-      return view('admin.profile.edit');
+      $cond_name = $request->cond_name;
+      if ($cond_name != '') {
+          //検索されたら検索結果を取得する
+          $posts = Profile::where('name', $cond_name)->get();
+      } else {
+          //それ以外はすべてのニュースを取得する
+          $posts = Profile::all();
+      }
+      return view('admin.profile.index', ['posts' => $posts, 'cond_name' => $cond_name]);
   }
 
-  public function update()
+  //editアクション 以下、課題17
+  public function edit(Request $request)
   {
-      return redirect('admin/profile/edit');
+      //Profile Modelからデータを取得する
+      $profiles = Profile::find($request->id);
+      if (empty($profiles)) {
+        abort(404);
+      }
+      return view('admin.profile.edit', ['profiles_form' => $profiles]);
+  }
+
+  //updateアクション 以下、課題17
+  public function update(Request $request)
+  {
+      //バリデーションをかける
+      $this->validate($request, Profile::$rules);
+      //Profile Modelからデータを取得する
+      $profiles = Profile::find($request->id);
+      //送信されてきたフォームデータを格納する
+      $profiles_form = $request->all();
+
+      //画像を変更した時の処理
+      if ($request->remove == 'true') {
+        $profiles_form['image_path'] = null;
+      } elseif ($request->file('image')) {
+        $path = $request->file('image')->store('public/image');
+        $profiles_form['image_path'] = basename($path);
+      } else {
+        $profiles_form['image_path'] = $profiles->image_path;
+      }
+
+      unset($profiles_form['_token']);
+      unset($profiles_form['image']);
+      //データベースにremoveカラムがないため、saveする前に$profiles_formから削除する
+      unset($profiles_form['remove']);
+
+      //該当するデータを上書きして保存する
+      $profiles->fill($profiles_form)->save();
+
+      //更新が終わったらadmin/profile/editにリダイレクトされる
+      return redirect('admin/profile');
+  }
+
+  //deleteアクション 以下、課題17
+  public function delete(Request $request)
+  {
+      //該当するNews Modelを取得する
+      $profiles = Profile::find($request->id);
+      //削除する
+      $profiles->delete();
+
+      return redirect('admin/profile');
   }
 
 }

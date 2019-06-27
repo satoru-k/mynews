@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-use App\Profile; //課題15-5
+use App\Profile;        //Profile Modelの使用宣言 課題15-5
+use App\ProfileHistory; //ProfileHistory Modelの使用宣言 課題18
+use Carbon\Carbon;      //日付操作ライブラリCarbonの使用宣言 課題18
 
 class ProfileController extends Controller
 {
@@ -51,7 +53,7 @@ class ProfileController extends Controller
           //検索されたら検索結果を取得する
           $posts = Profile::where('name', $cond_name)->get();
       } else {
-          //それ以外はすべてのニュースを取得する
+          //それ以外はすべてのデータを取得する
           $posts = Profile::all();
       }
       return view('admin.profile.index', ['posts' => $posts, 'cond_name' => $cond_name]);
@@ -96,6 +98,13 @@ class ProfileController extends Controller
       //該当するデータを上書きして保存する
       $profiles->fill($profiles_form)->save();
 
+      //以下、課題18
+      $history = new ProfileHistory; //モデルから空のインスタンス(レコード)を生成
+      $history->profile_id = $profiles->id;
+      //Carbonを使って取得した現在時刻を、ProfileHistoryモデルのedited_atとして記録
+      $history->edited_at = Carbon::now();
+      $history->save();
+
       //更新が終わったらadmin/profile/editにリダイレクトされる
       return redirect('admin/profile');
   }
@@ -103,7 +112,7 @@ class ProfileController extends Controller
   //deleteアクション 以下、課題17
   public function delete(Request $request)
   {
-      //該当するNews Modelを取得する
+      //該当するProfile Modelを取得する
       $profiles = Profile::find($request->id);
       //削除する
       $profiles->delete();

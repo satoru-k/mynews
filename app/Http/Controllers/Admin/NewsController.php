@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-use App\News; //News Modelを扱えるようになる 追記15
+use App\News;      //News Modelを扱えるようになる 追記15
+use App\History;   //History Modelの使用宣言 追記18
+use Carbon\Carbon; //日付操作ライブラリCarbonの使用宣言 追記18
 
 class NewsController extends Controller
 {
@@ -93,6 +95,13 @@ class NewsController extends Controller
 
       //該当するデータを上書きして保存する
       $news->fill($news_form)->save();
+
+      //以下、追記18
+      $history = new History; //newにより、モデルから空のインスタンス(レコード)を生成
+      $history->news_id = $news->id;
+      //Carbonを使って取得した現在時刻を、Historyモデルのedited_atとして記録
+      $history->edited_at = Carbon::now();
+      $history->save();
 
       //更新が終わったらadmin/newsにリダイレクトされる
       return redirect('admin/news');

@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-use App\News;      //News Modelを扱えるようになる 追記15
-use App\History;   //History Modelの使用宣言 追記18
+use App\News;      //Newsモデルを扱えるようになる 追記15
+use App\History;   //Historyモデルの使用宣言 追記18
 use Carbon\Carbon; //日付操作ライブラリCarbonの使用宣言 追記18
 
 class NewsController extends Controller
@@ -23,7 +23,9 @@ class NewsController extends Controller
       //以下、追記15
       //バリデーションを行う
       $this->validate($request, News::$rules);
-      $news = new News; //newメソッドにより、モデルから空のインスタンス(レコード)を生成
+      //newメソッドにより、Newsモデルのインスタンス(空のレコード)$newsを生成
+      $news = new News;
+      //フォームから送信されてきたデータを全て$formに入れる
       $form = $request->all();
 
       //フォームから画像が送信されてきたら、保存して$news->image_pathに画像のパスを保存する
@@ -41,7 +43,7 @@ class NewsController extends Controller
       $news->fill($form);
       $news->save();
 
-      //admin/news/createにリダイレクトする 追記14
+      //投稿後、admin/news/createにリダイレクトする 追記14
       return redirect('admin/news/create');
   }
 
@@ -49,11 +51,12 @@ class NewsController extends Controller
   public function index(Request $request)
   {
       $cond_title = $request->cond_title;
+      //$cond_titleが空白でない場合は、記事を検索して取得する
       if ($cond_title != '') {
           //検索されたら検索結果を取得する
           $posts = News::where('title', $cond_title)->get();
       } else {
-          //それ以外はすべてのニュースを取得する
+          //それ以外は全てのニュースを取得する
           $posts = News::all();
       }
       return view('admin.news.index', ['posts' => $posts, 'cond_title' => $cond_title]);
@@ -62,7 +65,7 @@ class NewsController extends Controller
   //editアクション 以下、追記17
   public function edit(Request $request)
   {
-      //News Modelからデータを取得する
+      //Newsモデルからテーブルのデータを取得し、idを持つものを探して、$newsに入れる
       $news = News::find($request->id);
       if (empty($news)) {
         abort(404);
@@ -75,9 +78,9 @@ class NewsController extends Controller
   {
       //バリデーションをかける
       $this->validate($request, News::$rules);
-      //News Modelからデータを取得する
+      //Newsモデルからテーブルのデータを取得し、idを持つものを探して、$newsに入れる
       $news = News::find($request->id);
-      //送信されてきたフォームデータを格納する
+      //送信されてきたフォームデータを全て$news_formに格納する
       $news_form = $request->all();
 
       //画像を変更した時の処理
@@ -110,7 +113,7 @@ class NewsController extends Controller
   //deleteアクション 以下、追記17
   public function delete(Request $request)
   {
-      //該当するNews Modelを取得する
+      //Newsモデルからテーブルのデータを取得し、idを持つものを探して、$newsに入れる
       $news = News::find($request->id);
       //削除する
       $news->delete();

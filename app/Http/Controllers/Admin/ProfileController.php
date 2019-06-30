@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-use App\Profile;        //Profile Modelの使用宣言 課題15-5
-use App\ProfileHistory; //ProfileHistory Modelの使用宣言 課題18
+use App\Profile;        //Profileモデルの使用宣言 課題15-5
+use App\ProfileHistory; //ProfileHistoryモデルの使用宣言 課題18
 use Carbon\Carbon;      //日付操作ライブラリCarbonの使用宣言 課題18
 
 class ProfileController extends Controller
@@ -23,7 +23,9 @@ class ProfileController extends Controller
 
       //バリデーションを行う
       $this->validate($request, Profile::$rules);
-      $profiles = new Profile; //newメソッドにより、モデルから空のインスタンスを生成
+      //newメソッドにより、Profileモデルのインスタンス(空のレコード)$profilesを生成
+      $profiles = new Profile;
+      //フォームから送信されてきたデータを全て$formに入れる
       $form = $request->all();
 
       //フォームから画像が送信されてきたら、保存してprofiles->image_pathに画像のパスを保存
@@ -41,7 +43,7 @@ class ProfileController extends Controller
       $profiles->fill($form);
       $profiles->save();
 
-      //admin/profile/createにリダイレクトする
+      //投稿後、admin/profile/createにリダイレクトする
       return redirect('admin/profile/create');
   }
 
@@ -49,11 +51,12 @@ class ProfileController extends Controller
   public function index(Request $request)
   {
       $cond_name = $request->cond_name;
+      //$cond_nameが空白でない場合は、記事を検索して取得する
       if ($cond_name != '') {
           //検索されたら検索結果を取得する
           $posts = Profile::where('name', $cond_name)->get();
       } else {
-          //それ以外はすべてのデータを取得する
+          //それ以外は全てのデータを取得する
           $posts = Profile::all();
       }
       return view('admin.profile.index', ['posts' => $posts, 'cond_name' => $cond_name]);
@@ -62,7 +65,7 @@ class ProfileController extends Controller
   //editアクション 以下、課題17
   public function edit(Request $request)
   {
-      //Profile Modelからデータを取得する
+      //Profileモデルからテーブルのデータを取得し、idを持つものを探して、$profilesに入れる
       $profiles = Profile::find($request->id);
       if (empty($profiles)) {
         abort(404);
@@ -75,9 +78,9 @@ class ProfileController extends Controller
   {
       //バリデーションをかける
       $this->validate($request, Profile::$rules);
-      //Profile Modelからデータを取得する
+      //Profileモデルからテーブルのデータを取得し、idを持つものを探して、$profilesに入れる
       $profiles = Profile::find($request->id);
-      //送信されてきたフォームデータを格納する
+      //送信されてきたフォームデータを全て$profiles_formに格納する
       $profiles_form = $request->all();
 
       //画像を変更した時の処理
@@ -112,7 +115,7 @@ class ProfileController extends Controller
   //deleteアクション 以下、課題17
   public function delete(Request $request)
   {
-      //該当するProfile Modelを取得する
+      //Profileモデルからテーブルのデータを取得し、idを持つものを探して、$profilesに入れる
       $profiles = Profile::find($request->id);
       //削除する
       $profiles->delete();

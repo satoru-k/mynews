@@ -18,5 +18,6 @@ class News extends Model
     public function histories()
     {
       return $this->hasMany('App\History');
+      //$thisとは、自分自身(ここではnews)のレコードのこと
     }
 }

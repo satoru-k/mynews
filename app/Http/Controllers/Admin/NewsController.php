@@ -56,10 +56,10 @@ class NewsController extends Controller
       //$cond_titleが空白でない場合は、記事を検索して取得する
       if ($cond_title != '') {
           //検索されたら検索結果を取得する
-          $posts = News::where('title', $cond_title)->get();
+          $posts = News::where('title', $cond_title)->orderBy('created_at', 'asc')->get(); //作成日時順
       } else {
           //それ以外は全てのニュースを取得する
-          $posts = News::all();
+          $posts = News::all()->sortBy('created_at'); //作成日時順
       }
       return view('admin.news.index', ['posts' => $posts, 'cond_title' => $cond_title]);
   }
